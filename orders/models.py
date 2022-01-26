@@ -1,41 +1,36 @@
 from django.db import models
 
 from users.models    import User
-from products.models import Product_Option
+from products.models import ProductOption
+from cores.models    import TimeStampModel
 
-class Cart(models.Model):
+class Cart(TimeStampModel):
     user           = models.ForeignKey(User, on_delete=models.CASCADE)
-    product_option = models.ForeignKey(Product_Option, on_delete=models.CASCADE)
+    product_option = models.ForeignKey(ProductOption, on_delete=models.CASCADE)
     quantity       = models.IntegerField()
-    created_at     = models.DateTimeField(auto_now_add=True)
-    updated_at     = models.DateTimeField(auto_now=True)
 
     class Meta:
         db_table = "carts"
 
-class Order_Status(models.Model):
+class OrderStatus(models.Model):
     status = models.CharField(max_length=20)
 
     class Meta:
         db_table = "orders_stauses"
 
-class Order_Item(models.Model):
-    product_option = models.ForeignKey(Product_Option, on_delete=models.CASCADE)
-    quantity       = models.IntegerField()
-    order_status   = models.ForeignKey(Order_Status, on_delete=models.CASCADE)
-    created_at     = models.DateTimeField(auto_now_add=True)
-    updated_at     = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        db_table = "orders_items"
-
-class Order(models.Model):
+class Order(TimeStampModel):
     user         = models.ForeignKey(User, on_delete=models.CASCADE)
     order_number = models.CharField(max_length=100)
-    order_item   = models.ForeignKey(Order_Item, on_delete=models.CASCADE)
-    order_status = models.ForeignKey(Order_Status, on_delete=models.CASCADE)
-    created_at   = models.DateTimeField(auto_now_add=True)
-    updated_at   = models.DateTimeField(auto_now=True)
+    order_status = models.ForeignKey(OrderStatus, on_delete=models.CASCADE)
 
     class Meta:
         db_table = "orders"
+
+class OrderItem(TimeStampModel):
+    order          = models.ForeignKey(Order, on_delete=models.CASCADE)
+    product_option = models.ForeignKey(ProductOption, on_delete=models.CASCADE)
+    quantity       = models.IntegerField()
+    order_status   = models.ForeignKey(OrderStatus, on_delete=models.CASCADE)
+
+    class Meta:
+        db_table = "orders_items"
