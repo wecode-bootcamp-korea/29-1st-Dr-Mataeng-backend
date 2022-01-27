@@ -9,6 +9,7 @@ class User(TimeStampModel):
     birthday     = models.DateField()
     email        = models.EmailField(max_length=100)
     phone_number = models.CharField(max_length=30)
+    gender       = models.CharField(max_length=10)
     recommender  = models.CharField(max_length=100, blank=True)
 
     class Meta:
