@@ -382,3 +382,5 @@ zsdoc/data
 
 my_settings.py
 .idea
+db_uploader.py
+csv/
