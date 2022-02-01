@@ -2,6 +2,7 @@ import json, jwt, re
 
 from django.http            import JsonResponse
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
+from django.db.utils        import IntegrityError
 from django.conf            import settings
 
 from users.models  import User
@@ -60,4 +61,4 @@ class UserValidation:
     
     def exist_username(username):
         if User.objects.filter(username = username).exists():
-            return JsonResponse({"message" : "USERNAME ALREADY EXIST"}, status=400)
+            raise IntegrityError

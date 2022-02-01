@@ -1,4 +1,7 @@
+from email import message
 import json, re, bcrypt, jwt
+
+from django.db import IntegrityError
 
 from json.decoder import JSONDecodeError
 from django.forms import ValidationError
@@ -67,6 +70,8 @@ class UserView(View):
             return JsonResponse({"message" : "KeyError"}, status=400)
         except ValidationError as e:
             return JsonResponse({"message" : e.messages}, status=400)
+        except IntegrityError as e:
+            return JsonResponse({"message" : "USERNAME ALREADY EXIST"}, status=400)
         except JSONDecodeError:
             return JsonResponse({"message": "JSONDECODE ERROR"}, status=400)
 
