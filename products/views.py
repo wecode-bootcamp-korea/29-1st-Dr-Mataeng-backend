@@ -2,7 +2,7 @@ import json
 
 from django.http  import JsonResponse
 from django.views import View
-from django.db.models import Q,F,Sum
+from django.db.models import Q,Sum
 
 from products.models import ProductColor, ProductImage, ProductOption
 
@@ -51,16 +51,13 @@ class ProductListView(View):
 
             if sort == "인기순":
                 data = sorted(data, key= lambda dict : dict['total_stock'])
-
             if sort == "신상품 순":
                 data = sorted(data, key= lambda dict : dict['id'], reverse=True)
-
             if sort == "높은 가격 순":
                 data = sorted(data, key= lambda dict : dict['price'], reverse=True)
-
             if sort == "낮은 가격 순":
                 data = sorted(data, key= lambda dict : dict['price'])
-
+                
             return JsonResponse({"result" : data}, status=200)
         except KeyError:
             return JsonResponse({"message" : "KEY ERROR"}, status=400)
