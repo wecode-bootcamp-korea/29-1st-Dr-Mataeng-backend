@@ -82,9 +82,10 @@ class ProductDetailView(View):
             } for product_option in products_options]
 
             colors = [{
-                "color_id"  : color_thumbnail.product_color.color.id,
-                "color"     : color_thumbnail.product_color.color.name,
-                "color_img" : color_thumbnail.image_url
+                "product_id" : color_thumbnail.product_color.id,
+                "color_id"   : color_thumbnail.product_color.color.id,
+                "color"      : color_thumbnail.product_color.color.name,
+                "color_img"  : color_thumbnail.image_url
             } for color_thumbnail in colors_thumbnails]
             
             data = {
