@@ -1,10 +1,8 @@
-import json
-
-from django.http  import JsonResponse
-from django.views import View
+from django.http      import JsonResponse
+from django.views     import View
 from django.db.models import Q,Sum
 
-from products.models import ProductColor, ProductImage, ProductOption
+from products.models  import ProductColor, ProductImage, ProductOption, ColorThumbnail
 
 class ProductListView(View):
     def get(self, request, *args, **kwargs):
@@ -15,10 +13,10 @@ class ProductListView(View):
             size             = request.GET.get("size", None)
             min_price        = request.GET.get("min_price", 10000)
             max_price        = request.GET.get("max_price", 500000)
+            sort             = request.GET.get("sort", None)
             products_colors  = ProductColor.objects.all()
             products_images  = ProductImage.objects.all()
             products_options = ProductOption.objects.all()
-            sort             = request.GET.get("sort", None)
 
             q  = Q()
             q &= Q(productoption__product_color__product__price__gte=min_price)
@@ -36,7 +34,7 @@ class ProductListView(View):
                 size = size.split(',')
                 q &= Q(productoption__size__name__in=size)
 
-            products_colors = products_colors.filter(q).distinct()
+            products_colors = products_colors.filter(q).distinct().order_by("id")
     
             data = [{
                 "id"            : product_color.id,
@@ -57,9 +55,52 @@ class ProductListView(View):
                 data = sorted(data, key= lambda dict : dict['price'], reverse=True)
             if sort == "낮은 가격 순":
                 data = sorted(data, key= lambda dict : dict['price'])
-                
+
             return JsonResponse({"result" : data}, status=200)
         except KeyError:
             return JsonResponse({"message" : "KEY ERROR"}, status=400)
         except Exception as e:
-            return JsonResponse({"message" : e}, status=400)
+            return JsonResponse({"message" : getattr(e,"message",str(e))}, status=400)
+
+class ProductDetailView(View):
+    def get(self, request, *args, **kwargs):
+        try:
+            product_color     = ProductColor.objects.get(id=kwargs["product_id"])
+            products_images   = ProductImage.objects.filter(product_color_id=kwargs["product_id"])
+            products_options  = ProductOption.objects.filter(product_color__id=kwargs["product_id"])
+            colors_thumbnails = ColorThumbnail.objects.filter(product_color__product__name=product_color.product.name)
+            
+            images = [{
+                "image_id"  : product_image.id, 
+                "image_url" : product_image.image_url
+                } for product_image in products_images]
+            
+            sizes  = [{
+                "size_id" : product_option.size.id,
+                "size"    : product_option.size.name,
+                "stock"   : product_option.stock
+            } for product_option in products_options]
+
+            colors = [{
+                "product_id" : color_thumbnail.product_color.id,
+                "color_id"   : color_thumbnail.product_color.color.id,
+                "color"      : color_thumbnail.product_color.color.name,
+                "color_img"  : color_thumbnail.image_url
+            } for color_thumbnail in colors_thumbnails]
+            
+            data = {
+                "product_id"     : kwargs["product_id"],
+                "product_name"   : product_color.product.name,
+                "images"         : images,
+                "sizes"          : sizes,
+                "price"          : int(product_color.product.price),
+                "colors"         : colors,
+                "product_number" : product_color.product_number,
+                "country"        : product_color.product.country.name,
+                "material"       : product_color.material.name,
+            }
+            return JsonResponse({"result" : data}, status=200)
+        except ProductColor.DoesNotExist:
+            return JsonResponse({'message' : 'PRODUCT DOES NOT EXIST'}, status=404)
+        except Exception as e:
+            return JsonResponse({"message" : getattr(e,"message",str(e))}, status=400)

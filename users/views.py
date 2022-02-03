@@ -1,8 +1,6 @@
-from email import message
-import json, re, bcrypt, jwt
+import json, bcrypt, jwt
 
 from django.db import IntegrityError
-
 from json.decoder import JSONDecodeError
 from django.forms import ValidationError
 from django.views import View
@@ -15,21 +13,20 @@ from users.utils  import UserValidation
 class UserView(View):
     def get(self, request):
         users   = User.objects.all()
-        results = []
 
-        for user in users:
-            results.append({
-                "name"         : user.name,
-                "username"     : user.username,
-                "password"     : user.password,
-                "birthday"     : user.birthday,
-                "email"        : user.email,
-                "phone_number" : user.phone_number,
-                "gender"       : user.gender,
-                "recommender"  : user.recommender,
-                "created_at"   : user.created_at,
-                "updated_at"   : user.updated_at,
-            })
+        results = [{
+            "name"         : user.name,
+            "username"     : user.username,
+            "password"     : user.password,
+            "birthday"     : user.birthday,
+            "email"        : user.email,
+            "phone_number" : user.phone_number,
+            "gender"       : user.gender,
+            "recommender"  : user.recommender,
+            "created_at"   : user.created_at,
+            "updated_at"   : user.updated_at,
+        } for user in users]
+
         return JsonResponse({'users' : results}, status=200)
 
     def post(self, request):
@@ -67,13 +64,13 @@ class UserView(View):
             user.save()
             return JsonResponse({"message" : "SUCCESS"}, status=201)
         except KeyError: 
-            return JsonResponse({"message" : "KeyError"}, status=400)
+            return JsonResponse({"message" : "KEY ERROR"}, status=400)
         except ValidationError as e:
             return JsonResponse({"message" : e.messages}, status=400)
-        except IntegrityError as e:
+        except IntegrityError:
             return JsonResponse({"message" : "USERNAME ALREADY EXIST"}, status=400)
         except JSONDecodeError:
-            return JsonResponse({"message": "JSONDECODE ERROR"}, status=400)
+            return JsonResponse({"message" : "JSONDECODE ERROR"}, status=400)
 
 class SignInView(View):
     def post(self, request):
@@ -89,11 +86,12 @@ class SignInView(View):
                     {"user_id": user.id}, settings.SECRET_KEY, algorithm=settings.ALGORITHMS
                 )
                 return JsonResponse({
-                    "message": "SUCCESS",
+                    "message"     : "SUCCESS",
+                    "user_id(pk)" : user.id,
                     "access_token": access_token
                 }, status=200)
             return JsonResponse({"message": "INVALID_USER(PASSWORD)"}, status=401)
         except KeyError:
-            return JsonResponse({"message": "KEY_ERROR"}, status=400)
+            return JsonResponse({"message": "KEY ERROR"}, status=400)
         except User.DoesNotExist:
             return JsonResponse({"message": "INVALID_USER(USERNAME)"}, status=401)
