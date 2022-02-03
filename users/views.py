@@ -86,7 +86,8 @@ class SignInView(View):
                     {"user_id": user.id}, settings.SECRET_KEY, algorithm=settings.ALGORITHMS
                 )
                 return JsonResponse({
-                    "message": "SUCCESS",
+                    "message"     : "SUCCESS",
+                    "user_id(pk)" : user.id,
                     "access_token": access_token
                 }, status=200)
             return JsonResponse({"message": "INVALID_USER(PASSWORD)"}, status=401)

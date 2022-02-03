@@ -89,7 +89,7 @@ class ProductDetailView(View):
             } for color_thumbnail in colors_thumbnails]
             
             data = {
-                "id"             : kwargs["product_id"],
+                "product_id"     : kwargs["product_id"],
                 "product_name"   : product_color.product.name,
                 "images"         : images,
                 "sizes"          : sizes,
