@@ -13,10 +13,10 @@ class ProductListView(View):
             size             = request.GET.get("size", None)
             min_price        = request.GET.get("min_price", 10000)
             max_price        = request.GET.get("max_price", 500000)
+            sort             = request.GET.get("sort", None)
             products_colors  = ProductColor.objects.all()
             products_images  = ProductImage.objects.all()
             products_options = ProductOption.objects.all()
-            sort             = request.GET.get("sort", None)
 
             q  = Q()
             q &= Q(productoption__product_color__product__price__gte=min_price)
@@ -69,7 +69,7 @@ class ProductDetailView(View):
             products_images   = ProductImage.objects.filter(product_color_id=kwargs["product_id"])
             products_options  = ProductOption.objects.filter(product_color__id=kwargs["product_id"])
             colors_thumbnails = ColorThumbnail.objects.filter(product_color__product__name=product_color.product.name)
-
+            
             images = [{
                 "image_id"  : product_image.id, 
                 "image_url" : product_image.image_url
