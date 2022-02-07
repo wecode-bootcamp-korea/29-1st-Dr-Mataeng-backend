@@ -57,14 +57,22 @@ class ProductColor(models.Model):
 
 class ProductImage(models.Model):
     image_url     = models.URLField(max_length = 16000)
-    product_color = models.ForeignKey(ProductColor, on_delete=models.CASCADE)
+    product_color = models.ForeignKey(
+        ProductColor, 
+        on_delete    = models.CASCADE, 
+        related_name = "products_images"
+        )
 
     class Meta:
         db_table = "products_images"
 
 class ColorThumbnail(models.Model):
     image_url     = models.URLField(max_length = 2000)
-    product_color = models.ForeignKey(ProductColor, on_delete=models.CASCADE, related_name="product_color")
+    product_color = models.ForeignKey(
+        ProductColor, 
+        on_delete    = models.CASCADE, 
+        related_name = "colors_thumbnails"
+        )
     
     class Meta:
         db_table = "colors_thumbnails"
