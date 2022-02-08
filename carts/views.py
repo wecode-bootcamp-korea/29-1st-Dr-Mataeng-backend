@@ -55,9 +55,14 @@ class CartView(View):
             cart, is_created_flag = Cart.objects.get_or_create(
                 user_id        = user.id,
                 product_option = product_option,
-                quantity       = quantity
+                defaults = {
+                    'quantity' : quantity
+                }
             )
-            cart.save()
+            if not is_created_flag:
+                cart.quantity += quantity
+                cart.save()
+
             return JsonResponse({"message" : "SUCCESS"}, status=201) 
         except KeyError:
             return JsonResponse({"message" : "KEY ERROR"}, status=400)
@@ -69,6 +74,16 @@ class CartView(View):
         try:
             user = request.user
             cart = Cart.objects.get(id=kwargs["cart_id"], user=user)
+
+#             # :8000/carts?cart_id=1&cart_id=2&cart_id=3
+# 
+#             cart_ids = request.GET.getlist('cart_id')
+#             carts    = Cart.objects.filter(id__in=cart_ids)
+# 
+#             if not carts:
+#                 return JsonResponse({...})
+# 
+#             carts.delete()
 
             cart.delete()
             return JsonResponse({"message" : "DELETE CART"}, status=200)

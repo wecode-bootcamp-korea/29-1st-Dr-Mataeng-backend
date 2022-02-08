@@ -27,6 +27,8 @@ class OrderView(View):
             cart_id = data["cart_id"]
             carts   = Cart.objects.filter(id=cart_id, user=user)
 
+            total_price = carts.aggregate(total_price=Sum('product_option__product_color__product__price'))['total_price']
+
             with transaction.atomic():
                 order_number = uuid.uuid4()
 
@@ -37,10 +39,21 @@ class OrderView(View):
 
                 # )
 
-                order_item = OrderItem.objects.create(
-                    
+                order = Order.objects.create(
+                    user = user,
+                    ..
                 )
+
+                order_items = [OrderItem(
+                    order    = order,
+                    quantity = quantity,
+                    ...
+                )]
+
+                OrderItem.objects.bulk_create(order_items)
                 
+                user.point -= total_price
+                user.save()
 
         except:
             pass
