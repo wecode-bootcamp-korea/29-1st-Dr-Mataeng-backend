@@ -14,6 +14,8 @@ class ProductListView(View):
             min_price        = request.GET.get("min_price", 10000)
             max_price        = request.GET.get("max_price", 500000)
             sort             = request.GET.get("sort", None)
+            offset           = int(request.GET.get("offset", 0))
+            limit            = int(request.GET.get("limit", 6))
             products_colors  = ProductColor.objects.all()
             products_images  = ProductImage.objects.all()
             products_options = ProductOption.objects.all()
@@ -45,7 +47,8 @@ class ProductListView(View):
                 "product_color" : product_color.color.name,
                 "total_stock"   : products_options.filter(product_color_id=product_color.id)\
                                   .aggregate(Sum('stock'))['stock__sum'],
-            }for product_color in products_colors]
+                "product_like"  : product_color.like_cnt
+            }for product_color in products_colors[offset:offset+limit]]
 
             if sort == "인기순":
                 data = sorted(data, key= lambda dict : dict['total_stock'])
@@ -98,6 +101,7 @@ class ProductDetailView(View):
                 "product_number" : product_color.product_number,
                 "country"        : product_color.product.country.name,
                 "material"       : product_color.material.name,
+                "like"           : product_color.like_cnt,
             }
             return JsonResponse({"result" : data}, status=200)
         except ProductColor.DoesNotExist:
