@@ -37,7 +37,7 @@ class ProductListView(View):
             products_colors = products_colors.filter(q).distinct().order_by("id")
     
             data = [{
-                "id"            : product_color.id,
+                "product_id"    : product_color.id,
                 "product_name"  : product_color.product.name,
                 "thumbnail_img" : products_images.filter(product_color_id=product_color.id)\
                                   .first().image_url,
