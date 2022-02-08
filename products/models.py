@@ -51,6 +51,7 @@ class ProductColor(models.Model):
     color          = models.ForeignKey(Color, on_delete=models.CASCADE)
     product_number = models.CharField(max_length=20)
     material       = models.ForeignKey(Material, on_delete=models.CASCADE)
+    like_cnt       = models.IntegerField(default = '0')
 
     class Meta:
         db_table = "products_colors"
