@@ -22,7 +22,6 @@ class OrderItem(TimeStampModel):
     order          = models.ForeignKey(Order, on_delete=models.CASCADE)
     product_option = models.ForeignKey(ProductOption, on_delete=models.CASCADE)
     quantity       = models.IntegerField()
-    order_status   = models.ForeignKey(OrderStatus, on_delete=models.CASCADE)
 
     class Meta:
         db_table = "orders_items"

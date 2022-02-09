@@ -3,12 +3,12 @@ import json
 from django.http      import JsonResponse
 from django.views     import View
 
-from users.utils      import LoginConfirm
+from users.utils      import login_decorator
 from carts.models     import Cart
 from products.models  import ProductOption
 
 class CartView(View):
-    @LoginConfirm.login_decorator
+    @login_decorator
     def get(self, request, *args, **kwargs):
         try:
             user  = request.user
@@ -29,7 +29,7 @@ class CartView(View):
         except Exception as e:
             return JsonResponse({"message" : getattr(e,"message",str(e))}, status=400)
 
-    @LoginConfirm.login_decorator
+    @login_decorator
     def post(self, request, *args, **kwargs):
         try:
             data       = json.loads(request.body)
@@ -53,7 +53,7 @@ class CartView(View):
                 return JsonResponse({"message" : "INVALID QUANTITY"}, status=400)
 
             cart, is_created_flag = Cart.objects.get_or_create(
-                user_id        = user.id,
+                user           = user,
                 product_option = product_option,
                 quantity       = quantity
             )
@@ -64,13 +64,17 @@ class CartView(View):
         except Exception as e:
             return JsonResponse({"message" : getattr(e,"message",str(e))}, status=400)
 
-    @LoginConfirm.login_decorator
+    @login_decorator
     def delete(self, request, *args, **kwargs):
         try:
-            user = request.user
-            cart = Cart.objects.get(id=kwargs["cart_id"], user=user)
+            user     = request.user
+            cart_ids = request.GET.getlist('cart_id')
+            carts    = Cart.objects.filter(id__in=cart_ids, user=user)
 
-            cart.delete()
+            if not carts:
+                return JsonResponse({"message" : "NOT EXIST CART"}, status=400)
+
+            carts.delete()
             return JsonResponse({"message" : "DELETE CART"}, status=200)
         except KeyError:
             return JsonResponse({"message" : "KEY ERROR"}, status=400)
