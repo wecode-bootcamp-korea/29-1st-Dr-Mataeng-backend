@@ -8,24 +8,26 @@ from django.http  import JsonResponse
 from django.conf  import settings
 
 from users.models import User
-from users.utils  import UserValidation
+from users.utils  import (login_decorator,
+                          validate_name,
+                          validate_username,
+                          validate_password,
+                          validate_birthday,
+                          validate_email,
+                          validate_phone_number,
+                          exist_username)
 
 class UserView(View):
+    @login_decorator
     def get(self, request):
-        users   = User.objects.all()
+        user = request.user
 
-        results = [{
+        results = {
             "name"         : user.name,
-            "username"     : user.username,
-            "password"     : user.password,
-            "birthday"     : user.birthday,
-            "email"        : user.email,
+            "point"        : user.point,
             "phone_number" : user.phone_number,
-            "gender"       : user.gender,
-            "recommender"  : user.recommender,
-            "created_at"   : user.created_at,
-            "updated_at"   : user.updated_at,
-        } for user in users]
+            "email"        : user.email
+        }
 
         return JsonResponse({'users' : results}, status=200)
 
@@ -43,13 +45,13 @@ class UserView(View):
             recommender     = data["recommender"]
             hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
-            UserValidation.validate_name(name)
-            UserValidation.validate_username(username)
-            UserValidation.validate_password(password)
-            UserValidation.validate_birthday(birthday)
-            UserValidation.validate_email(email)
-            UserValidation.validate_phone_number(phone_number)
-            UserValidation.exist_username(username)
+            validate_name(name)
+            validate_username(username)
+            validate_password(password)
+            validate_birthday(birthday)
+            validate_email(email)
+            validate_phone_number(phone_number)
+            exist_username(username)
 
             user = User(
                 name         = name,
@@ -60,6 +62,7 @@ class UserView(View):
                 phone_number = phone_number,
                 gender       = gender,
                 recommender  = recommender,
+                point        = 1000000
             )
             user.save()
             return JsonResponse({"message" : "SUCCESS"}, status=201)
