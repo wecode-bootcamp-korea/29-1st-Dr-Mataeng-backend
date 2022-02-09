@@ -1,42 +1,53 @@
 from django.http      import JsonResponse
 from django.views     import View
-from django.db.models import Q,Sum
+from django.db.models import Q,Sum,Count
 
 from products.models  import ProductColor, ProductImage, ProductOption, ColorThumbnail
 
 class ProductListView(View):
     def get(self, request, *args, **kwargs):
         try:
-            gender           = request.GET.get("gender", None)
+            gender           = request.GET.getlist("gender", None)
             category         = request.GET.get("category", None)
-            color            = request.GET.get("color", None)
-            size             = request.GET.get("size", None)
+            color            = request.GET.getlist("color", None)
+            size             = request.GET.getlist("size", None)
             min_price        = request.GET.get("min_price", 10000)
             max_price        = request.GET.get("max_price", 500000)
-            sort             = request.GET.get("sort", None)
+            sort             = request.GET.get("sort", '신상품 순')
             offset           = int(request.GET.get("offset", 0))
             limit            = int(request.GET.get("limit", 6))
             products_colors  = ProductColor.objects.all()
             products_images  = ProductImage.objects.all()
             products_options = ProductOption.objects.all()
 
+            """
+            order_item 개수 Count
+            status = Done 인 order_item들
+            """
+
+            sort_dict = {
+                '인기순'      : '-total_sales',
+                '낮은 가격 순' : 'product__price',
+                '높은 가격 순' : '-product__price',
+                '신상품 순'    : '-id'
+            }
+
             q  = Q()
-            q &= Q(productoption__product_color__product__price__gte=min_price)
-            q &= Q(productoption__product_color__product__price__lte=max_price)
+            q &= Q(productoption__product_color__product__price__range=[min_price, max_price])
             
             if category:
                 q &= Q(productoption__product_color__product__category__name=category)
             if gender:
-                gender = gender.split(',')
                 q &= Q(productoption__product_color__product__gender__name__in=gender)
             if color:
-                color = color.split(',')
                 q &= Q(productoption__product_color__color__name__in=color)
             if size:
-                size = size.split(',')
                 q &= Q(productoption__size__name__in=size)
 
-            products_colors = products_colors.filter(q).distinct().order_by("id")
+            products_colors = products_colors.filter(q)\
+                              .annotate(total_sales=Count('productoption__orderitem__id'))\
+                              .distinct().order_by(sort_dict.get(sort))\
+                              [offset:offset+limit]
     
             data = [{
                 "product_id"    : product_color.id,
@@ -47,17 +58,9 @@ class ProductListView(View):
                 "product_color" : product_color.color.name,
                 "total_stock"   : products_options.filter(product_color_id=product_color.id)\
                                   .aggregate(Sum('stock'))['stock__sum'],
-                "product_like"  : product_color.like_cnt
-            }for product_color in products_colors[offset:offset+limit]]
-
-            if sort == "인기순":
-                data = sorted(data, key= lambda dict : dict['total_stock'])
-            if sort == "신상품 순":
-                data = sorted(data, key= lambda dict : dict['id'], reverse=True)
-            if sort == "높은 가격 순":
-                data = sorted(data, key= lambda dict : dict['price'], reverse=True)
-            if sort == "낮은 가격 순":
-                data = sorted(data, key= lambda dict : dict['price'])
+                "product_like"  : product_color.like_cnt,
+                'total_sales'   : product_color.total_sales
+            }for product_color in products_colors]
 
             return JsonResponse({"result" : data}, status=200)
         except KeyError:
