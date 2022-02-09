@@ -1,53 +1,45 @@
-import json
 import uuid
 
-from django.views   import View
-from django.http    import JsonResponse
-from django.db      import transaction
-from orders.models import Order, OrderItem
+from django.views     import View
+from django.http      import JsonResponse
+from django.db        import transaction
+from django.db.models import Sum,F
 
-
-from users.utils      import LoginConfirm
+from users.utils      import login_decorator
+from orders.models    import Order, OrderItem, OrderStatus
 from carts.models     import Cart
-from products.models  import ProductOption
 
 class OrderView(View):
-    @LoginConfirm.login_decorator
+    @login_decorator
     def get(self, request, *args, **kwargs):
         try:
-            pass
-        except:
-            pass
+            user        = request.user
+            orders      = Order.objects.filter(user=user)
+            order_items = OrderItem.objects.filter(order__in=orders)
+            total_price = order_items.aggregate\
+                          (total_price=Sum(F('product_option__product_color__product__price') * F('quantity')))\
+                          ['total_price']
 
-    @LoginConfirm.login_decorator
-    def post(self, request, *args, **kwargs):
-        try:
-            data    = json.loads(request.body)
-            user    = request.user
-            cart_id = data["cart_id"]
-            carts   = Cart.objects.filter(id=cart_id, user=user)
+            order_item_list = [{
+                'order_item_id' : order_item.id,
+                'product_id'    : order_item.product_option.product_color.id,
+                'product_name'  : order_item.product_option.product_color.product.name,
+                'product_image' : order_item.product_option.product_color.products_images.first().image_url,
+                'product_color' : order_item.product_option.product_color.color.name,
+                'product_size'  : order_item.product_option.size.name,
+                'quantity'      : order_item.quantity,
+                'price'         : int(order_item.product_option.product_color.product.price * order_item.quantity),
+                'created_at'    : order_item.created_at,
+                'updated_at'    : order_item.updated_at,
+            }for order_item in order_items]
 
-            with transaction.atomic():
-                order_number = uuid.uuid4()
-
-                # order = Order.objects.create(
-                #     user_id         = user.id,
-                #     order_number    = order_number,
-                #     order_status_id = 
-
-                # )
-
-                order_item = OrderItem.objects.create(
-                    
-                )
-                
-
-        except:
-            pass
-
-    @LoginConfirm.login_decorator
-    def delete(self, request, *args, **kwargs):
-        try:
-            pass
-        except:
-            pass
+            order_list = [{
+                'order_id'     : order.id,
+                'user'         : user.name,
+                'order_items'  : order_item_list,
+                'total_price'  : int(total_price),
+                'order_status' : order.order_status.status,
+            }for order in orders]
+            return JsonResponse({"result" : order_list}, status=200)
+        except Exception as e:
+            return JsonResponse({"message" : getattr(e,"message",str(e))}, status=400)
