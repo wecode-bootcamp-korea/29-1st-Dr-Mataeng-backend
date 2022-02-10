@@ -61,6 +61,9 @@ class OrderView(View):
                           (total_price=Sum(F('product_option__product_color__product__price') * F('quantity')))\
                           ['total_price']
 
+            if user.point < total_price:
+                    return JsonResponse({"message" : "NOT ENOUGH POINT"}, status=400)
+
             with transaction.atomic():
                 order_number = uuid.uuid4()
                 order_status = OrderStatus.objects.get(status="결제완료")
@@ -76,9 +79,6 @@ class OrderView(View):
                     product_option = cart.product_option,
                     quantity       = cart.quantity
                 ) for cart in carts]
-
-                if user.point < total_price:
-                    return JsonResponse({"message" : "NOT ENOUGH POINT"}, status=400)
 
                 user.point -= total_price
                 user.save()
