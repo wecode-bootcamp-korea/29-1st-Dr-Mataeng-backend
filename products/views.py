@@ -111,3 +111,43 @@ class ProductDetailView(View):
             return JsonResponse({'message' : 'PRODUCT DOES NOT EXIST'}, status=404)
         except Exception as e:
             return JsonResponse({"message" : getattr(e,"message",str(e))}, status=400)
+
+class SearchView(View):
+    def get(self, request, *args, **kwargs):
+        try:
+            search           = request.GET.get("text", None)
+            offset           = int(request.GET.get("offset", 0))
+            limit            = int(request.GET.get("limit", 200))
+            products_colors  = ProductColor.objects.all()
+            products_images  = ProductImage.objects.all()
+            products_options = ProductOption.objects.all()
+
+            q  = Q()
+
+            if search:
+                q |= Q(productoption__product_color__product__name__icontains=search)
+                q |= Q(productoption__product_color__product_number__icontains=search)
+            
+            products_colors = products_colors.filter(q)\
+                              .annotate(total_sales=Count('productoption__orderitem__id'))\
+                              .distinct().order_by('id')\
+                              [offset:offset+limit]
+
+            data = [{
+                "product_id"    : product_color.id,
+                "product_name"  : product_color.product.name,
+                "thumbnail_img" : products_images.filter(product_color_id=product_color.id)\
+                                    .first().image_url,
+                "price"         : int(product_color.product.price),
+                "product_color" : product_color.color.name,
+                "total_stock"   : products_options.filter(product_color_id=product_color.id)\
+                                    .aggregate(Sum('stock'))['stock__sum'],
+                "product_like"  : product_color.like_cnt,
+                'total_sales'   : product_color.total_sales
+            }for product_color in products_colors]
+
+            return JsonResponse({"result" : data}, status=200)
+        except KeyError:
+            return JsonResponse({"message" : "KEY ERROR"}, status=400)
+        except Exception as e:
+            return JsonResponse({"message" : getattr(e,"message",str(e))}, status=400)

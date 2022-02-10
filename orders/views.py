@@ -1,5 +1,7 @@
 import uuid
 
+from datetime import datetime
+
 from django.views     import View
 from django.http      import JsonResponse
 from django.db        import transaction
@@ -29,12 +31,13 @@ class OrderView(View):
                 'product_size'  : order_item.product_option.size.name,
                 'quantity'      : order_item.quantity,
                 'price'         : int(order_item.product_option.product_color.product.price * order_item.quantity),
-                'created_at'    : order_item.created_at,
-                'updated_at'    : order_item.updated_at,
+                'created_at'    : order_item.created_at.strftime("%Y년 %m월 %d일 %H:%M"),
+                'updated_at'    : order_item.updated_at.strftime("%Y년 %m월 %d일 %H:%M"),
             }for order_item in order_items]
 
             order_list = [{
                 'order_id'     : order.id,
+                'order_number' : order.order_number,
                 'user'         : user.name,
                 'order_items'  : order_item_list,
                 'total_price'  : int(total_price),
