@@ -29,12 +29,13 @@ class OrderView(View):
                 'product_size'  : order_item.product_option.size.name,
                 'quantity'      : order_item.quantity,
                 'price'         : int(order_item.product_option.product_color.product.price * order_item.quantity),
-                'created_at'    : order_item.created_at,
-                'updated_at'    : order_item.updated_at,
+                'created_at'    : str(order_item.created_at)[:10],
+                'updated_at'    : str(order_item.updated_at)[:10],
             }for order_item in order_items]
 
             order_list = [{
                 'order_id'     : order.id,
+                'order_number' : order.order_number,
                 'user'         : user.name,
                 'order_items'  : order_item_list,
                 'total_price'  : int(total_price),
