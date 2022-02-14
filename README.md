@@ -60,7 +60,7 @@
 ## 클론 영상
 
 
-<iframe title="'jxngbxxm'에서 업로드한 동영상" width="640" height="360" src="https://play-tv.kakao.com/embed/player/cliplink/426313620?service=player_share" allowfullscreen frameborder="0" scrolling="no" allow="autoplay; fullscreen; encrypted-media"></iframe>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/GlK28FnB0Ho" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
 
 <br />
