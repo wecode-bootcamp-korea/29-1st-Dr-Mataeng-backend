@@ -5,16 +5,17 @@
 <br />
 - 개발은 초기 세팅부터 전부 직접 구현 했으며, 아래 데모 영상에서 보이는 부분은 모두 프론트엔드와 백엔드가 통신하여 실제 서비스 수준으로 개발한 것입니다.
 <br />
+<br />
 
 ## 기간
----
+
 - 개발기간: 2022.01.24 ~ 2022.02.11
 <br />
 <br />
 <br />
 
 ## 팀원
----
+
 - Frontend (3명) : 유재민, 오수민, 장예지
 - Backend (2명)  : 강종범, 이혜린
 <br />
@@ -26,7 +27,6 @@
 <br />
 
 ## 사용된 기술
----
 - Python
 - Django
 - MySQL
@@ -37,7 +37,6 @@
 <br />
 
 ## 라이브러리
----
 - bcrpyt
 - jwt
 - django-cors
@@ -46,7 +45,7 @@
 <br />
 
 ## 협업
----
+
 - Github
 - Slack
 - Notion
@@ -58,21 +57,21 @@
 
 
 ## 클론 영상
----
+
 <img width="70%" src="https://user-images.githubusercontent.com/67303977/153739505-684946cf-6f8c-417f-9512-84b2f793486c.gif"/>
 <br />
 <br />
 <br />
 
 ## ERD
----
+
 
 <br />
 <br />
 <br />
 
 ## 담당 구현 사항 및 구현 기능
----
+
 #### 강종범 - 🤖  
 
 #### 이혜린 - 🙂
@@ -89,6 +88,7 @@
 - 검색 🤖 
 - 장바구니 🤖
 - 주문 결제 🤖
+<br />
 ---
 
 ## 🥾 User
@@ -129,7 +129,6 @@
 <br />
 
 ## API Documentstion
----
 
 <a href="https://documenter.getpostman.com/view/19385058/UVeDt7zS#intro">Postman API</a>
 <br />
